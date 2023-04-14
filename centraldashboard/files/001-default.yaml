@@ -1,0 +1,14 @@
+summary: Initial centraldashboard layer
+description: |
+  A simple Pebble layer included with the underlying 
+  ROCK that can be used to start and test Central
+  Dashboard instance within.
+services:
+  serve:
+    override: replace
+    summary: "Entry point of centraldashboard"
+    command: /usr/bin/npm start --prefix /app
+    startup: enabled
+    user: centraldashboard
+    environment:
+      NODE_ENV: production

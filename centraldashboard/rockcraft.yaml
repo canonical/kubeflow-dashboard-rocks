@@ -1,0 +1,83 @@
+name: kubeflow-central-dashboard
+summary: Kubeflow Landing Page
+description: |
+  This component serves as the landing page and central dashboard for Kubeflow deployments.
+  It provides a jump-off point to all other facets of the platform.
+
+version: "1.6.0" # should be in-sync with branch that is used in building parts
+license: Apache-2.0
+base: ubuntu:22.04
+#cmd: ["/usr/bin/npm", "start", "--prefix", "/app"]
+platforms:
+  amd64:
+
+entrypoint: ["/bin/pebble", "run", "-v"]
+
+parts:
+  centraldashboard:
+    plugin: dump
+    source: https://github.com/kubeflow/kubeflow
+    source-type: git
+    source-tag: v1.6-branch
+    build-snaps:
+      - node/12/stable
+    build-packages:
+      - apt
+      - bash
+      - chromium-browser
+      - libnss3
+      - libfreetype-dev
+      - libharfbuzz-dev
+      - fonts-freefont-ttf
+      - libstdc++6
+      - nodejs
+      - npm
+    build-environment:
+      - CHROME_BIN: /usr/bin/chromium-browser
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+    stage-packages:
+      - bash # this is for debugging only, should be removed for production
+      - nodejs
+      - npm
+    override-build: |
+      set -x
+      cd $CRAFT_PART_SRC/components/centraldashboard/
+
+      # set environment variables
+      export BUILD_VERSION=$(git describe --abbrev=0 --tags)
+      export BUILD_COMMIT=$(git rev-parse HEAD)
+
+      # build
+      npm rebuild && \
+      if [ "$(uname -m)" = "aarch64" ]; then \
+          export CFLAGS=-Wno-error && \
+          export CXXFLAGS=-Wno-error && \
+          npm install; \
+      else \
+          npm install; \
+      fi && \
+      npm test && \
+      npm run build && \
+      npm prune --production
+
+      # install build artifacts
+      mkdir -p $CRAFT_PART_INSTALL/app
+      cp -r * $CRAFT_PART_INSTALL/app
+      
+  default-config:
+    plugin: dump
+    source: files
+    organize:
+      001-default.yaml: var/lib/pebble/default/layers/001-default.yaml
+    stage:
+      - var/lib/pebble/default/layers/001-default.yaml
+
+  non-root-user:
+    plugin: nil
+    after: [default-config]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1000 centraldashboard
+      useradd -R $CRAFT_OVERLAY -M -r -u 1000 -g centraldashboard centraldashboard
+    override-prime: |
+      craftctl default
