@@ -45,7 +45,7 @@ parts:
       - nodejs
       - npm
     override-build: |
-      set -x
+      set -xe
       cd $CRAFT_PART_SRC/components/centraldashboard/
 
       # set environment variables
