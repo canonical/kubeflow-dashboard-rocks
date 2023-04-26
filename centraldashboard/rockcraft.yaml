@@ -3,8 +3,7 @@ summary: Kubeflow Landing Page
 description: |
   This component serves as the landing page and central dashboard for Kubeflow deployments.
   It provides a jump-off point to all other facets of the platform.
-
-version: "1.6.0" # should be in-sync with branch that is used in building parts
+version: 1.7.0_1 # # version format: <KF-upstream-version>_<Charmed-KF-version>
 license: Apache-2.0
 base: ubuntu:22.04
 services:
@@ -24,7 +23,7 @@ parts:
     plugin: dump
     source: https://github.com/kubeflow/kubeflow
     source-type: git
-    source-tag: v1.6-branch
+    source-tag: v1.7-branch # upstream branch
     build-snaps:
       - node/12/stable
     build-packages:
