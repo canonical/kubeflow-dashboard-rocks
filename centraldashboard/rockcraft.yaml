@@ -9,7 +9,7 @@ base: ubuntu:22.04
 services:
   serve:
     override: replace
-    summary: "Entry point of centraldashboard"
+    summary: "centraldashboard service"
     command: /usr/bin/npm start --prefix /app
     startup: enabled
     user: centraldashboard
