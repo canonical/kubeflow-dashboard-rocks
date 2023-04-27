@@ -1,0 +1,33 @@
+name: Build, scan ROCKs, and send reports
+
+on:
+  schedule:
+  # every day at 1:12AM UTC
+  - cron: '12 1 * * *'
+
+jobs:
+  build-scan:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install requirements for image building
+        run: |
+          ./tools/install-tools.sh
+      - name: Build and scan for vulnerabilities
+        run: |
+          ./tools/build-scan.sh
+      - name: Send vulnerability records
+        run: |
+          ./tools/send-scan.sh ./trivy-reports ${{ secrets.JIRA_TOKEN }}
+      - name: Prepare artifacts
+        run: |
+          tar zcvf trivy-reports-${{ strategy.job-index }}.tar.gz ./trivy-reports
+      - name: Upload Trivy reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-reports
+          path: trivy-reports-${{ strategy.job-index }}.tar.gz
