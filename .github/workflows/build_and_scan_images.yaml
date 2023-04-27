@@ -1,9 +1,10 @@
 name: Build, scan ROCKs, and send reports
 
 on:
-  schedule:
+  workflow_call:
+  #schedule:
   # every day at 1:12AM UTC
-  - cron: '12 1 * * *'
+  #- cron: '12 1 * * *'
 
 jobs:
   build-scan:
