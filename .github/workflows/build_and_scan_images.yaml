@@ -7,30 +7,42 @@ on:
   #- cron: '12 1 * * *'
 
 jobs:
-  build-scan:
+  build-scan-rocks:
     runs-on: ubuntu-20.04
-
+    name: Build and scan ROCKs
+    strategy:
+      matrix:
+        rock:
+          - centraldashboard
+          - jupyter-pytorch-full
+          - notebook-controller
     steps:
-      - name: Install requirements for image building
+      - name: Install tools
         run: |
           ./tools/install-tools.sh
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Rockcraft
+      - name: Build ROCK
         uses: canonical/craft-actions/rockcraft-pack@main
-        with:
-          path: notebook-controller/
-      - name: Build and scan for vulnerabilities
+          secrets: inherit
+          with:
+            rock-path: ${{ matrix.rock }}
+      - name: Scan for vulnerabilities
         run: |
           ./tools/scan.sh
+        working-directory: ${{ matrix.rock }}
       - name: Send vulnerability records
         run: |
           ./tools/send-scan.sh ./trivy-reports ${{ secrets.JIRA_TOKEN }}
+        working-directory: ${{ matrix.rock }}
       - name: Prepare artifacts
         run: |
-          tar zcvf trivy-reports-${{ strategy.job-index }}.tar.gz ./trivy-reports
+          tar zcvf trivy-reports-${{ matrix.rock }}.${{ strategy.job-index }}.tar.gz ./trivy-reports
+        working-directory: ${{ matrix.rock }}
       - name: Upload Trivy reports
         uses: actions/upload-artifact@v3
         with:
-          name: trivy-reports
-          path: trivy-reports-${{ strategy.job-index }}.tar.gz
+          name: trivy-reports-${{ matrix.rock }}
+          path: trivy-reports-${{ matrix.rock }}.${{ strategy.job-index }}.tar.gz
+        working-directory: ${{ matrix.rock }}
+
