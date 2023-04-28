@@ -1,7 +1,7 @@
 name: Build and scan ROCKs, save and send scan reports
 
 on:
-  workflow_dispatch:
+  workflow_call:
   #schedule:
   # every day at 1:12AM UTC
   #- cron: '12 1 * * *'
@@ -26,9 +26,8 @@ jobs:
           fetch-depth: 0
       - name: Build ROCK
         uses: canonical/craft-actions/rockcraft-pack@main
-          secrets: inherit
-          with:
-            rock-path: ${{ matrix.rock }}
+        with:
+          rock-path: ${{ matrix.rock }}
       - name: Scan for vulnerabilities
         run: |
           ./tools/scan.sh
