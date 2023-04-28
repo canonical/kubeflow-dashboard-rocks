@@ -22,6 +22,8 @@ jobs:
           ./tools/install-tools.sh
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Build ROCK
         uses: canonical/craft-actions/rockcraft-pack@main
           secrets: inherit
