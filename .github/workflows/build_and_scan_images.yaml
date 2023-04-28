@@ -27,7 +27,7 @@ jobs:
       - name: Build ROCK
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
-          rock-path: ${{ matrix.rock }}
+          path: ${{ matrix.rock }}
       - name: Scan for vulnerabilities
         run: |
           ./tools/scan.sh
