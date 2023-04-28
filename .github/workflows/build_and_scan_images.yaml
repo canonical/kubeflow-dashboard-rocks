@@ -11,18 +11,18 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Install requirements for image building
+        run: |
+          ./tools/install-tools.sh
       - name: Checkout
         uses: actions/checkout@v3
       - name: Rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
-          fetch-depth: 0
-      - name: Install requirements for image building
-        run: |
-          ./tools/install-tools.sh
+          path: notebook-controller/
       - name: Build and scan for vulnerabilities
         run: |
-          ./tools/build-scan.sh
+          ./tools/scan.sh
       - name: Send vulnerability records
         run: |
           ./tools/send-scan.sh ./trivy-reports ${{ secrets.JIRA_TOKEN }}
