@@ -34,7 +34,7 @@ jobs:
         working-directory: ${{ matrix.rock }}
       - name: Send vulnerability records
         run: |
-          ../tools/send-scan.sh ./trivy-reports ${{ secrets.JIRA_TOKEN }}
+          ../tools/send-scan.sh ./trivy-reports ${{ secrets.JIRA_URL }}
         working-directory: ${{ matrix.rock }}
       - name: Prepare artifacts
         run: |
