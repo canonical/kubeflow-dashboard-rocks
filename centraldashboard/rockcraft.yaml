@@ -25,7 +25,7 @@ parts:
     source-type: git
     source-tag: v1.7-branch # upstream branch
     build-snaps:
-      - node/12/stable
+      - node/18/stable
     build-packages:
       - apt
       - bash
