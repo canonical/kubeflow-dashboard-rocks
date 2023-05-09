@@ -16,8 +16,6 @@ jobs:
           - centraldashboard
           - jupyter-pytorch-full
           - notebook-controller
-    steps:
-      - name: Build and scan ROCKs
-        uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rocks.yaml@main
-        with:
-          rock: ${{ matrix.rock }}
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rocks.yaml@main
+    with:
+      rock: ${{ matrix.rock }}
