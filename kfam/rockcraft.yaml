@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: kfam
+summary: Kubeflow Access Management API
+description: Kubeflow Access Management API provides fine-grain user-namespace level access control.
+version: "v1.7.0_1"
+license: Apache-2.0
+base: ubuntu:22.04
+
+platforms:
+  amd64:
+
+services:
+  access-manager:
+    override: replace
+    command: "/access-management -cluster-admin admin -userid-header kubeflow-userid -userid-prefix ''"
+    startup: enabled
+    user: ubuntu
+
+parts:
+  kfam:
+    plugin: go
+    build-snaps:
+      - go/1.19/stable
+    source: https://github.com/kubeflow/kubeflow.git
+    source-subdir: components/access-management
+    source-type: git
+    source-tag: v1.7.0
+    build-environment:
+      - CGO_ENABLED: 0
+      - GOOS: linux
+    override-build: |
+      # cd into $CRAFT_PART_SRC_WORK due to https://github.com/canonical/craft-parts/issues/427
+      cd $CRAFT_PART_SRC_WORK
+      go mod download
+      go build -gcflags 'all=-N -l' -o $CRAFT_PART_INSTALL/access-management main.go
+      chmod a+rx $CRAFT_PART_INSTALL/access-management
+      cp -r third_party $CRAFT_PART_INSTALL/third_party
+      cp -r /root/go/pkg/mod/github.com/hashicorp $CRAFT_PART_INSTALL/third_party/library/
+
+      # security requirement
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/ROCK images
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
+      dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
+      > ${CRAFT_PART_INSTALL}/usr/share/ROCK images/dpkg.query
+
+  non-root-user:
+    plugin: nil
+    after: kfam
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+ 
