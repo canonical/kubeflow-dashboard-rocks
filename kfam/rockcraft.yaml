@@ -41,14 +41,14 @@ parts:
       cp -r /root/go/pkg/mod/github.com/hashicorp $CRAFT_PART_INSTALL/third_party/library/
 
       # security requirement
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/ROCK images
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
       (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
       dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
-      > ${CRAFT_PART_INSTALL}/usr/share/ROCK images/dpkg.query
+      > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
 
   non-root-user:
     plugin: nil
-    after: kfam
+    after: [kfam]
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
       groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
