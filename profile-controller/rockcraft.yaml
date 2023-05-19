@@ -1,0 +1,65 @@
+# Constructed from https://github.com/kubeflow/kubeflow/blob/v1.7-branch/components/profile-controller/Dockerfile
+
+name: profile-controller
+summary: Controller for Kubeflow Profile objects
+description: Controller for Kubeflow Profile objects
+version: v1.7.0_22.04_1 # version format: <KF-upstream-version>_<Charmed-KF-version>
+
+# TODO: use base: bare
+base: ubuntu:22.04
+build-base: ubuntu:22.04
+
+license: Apache-2.0
+
+platforms:
+  amd64:
+
+services:
+  profile-controller:
+    command: /manager
+    override: replace
+    startup: enabled
+    summary: Profile Controller service
+    user: ubuntu
+
+parts:
+  profile-controller:
+    plugin: go
+    source-type: git
+    source: https://github.com/kubeflow/kubeflow.git
+    source-tag: v1.7-branch 
+    # TODO: Refactor to use source-subdir once 
+    # [this fix](https://github.com/canonical/craft-parts/pull/442) lands
+    # source-subdir: components/profile-controller
+    build-environment:
+      - CGO_ENABLED: 0
+      - GOOS: linux
+      # - GO111MODULE: on  # Not needed, but wasn't clear why.  Something snap related
+    build-snaps:
+      - go/1.17/stable
+    # Build the go code and output to $CRAFT_PART_INSTALL
+    # Copy the hashcorp libs used during build for later staging
+    override-build: |
+      cd components/profile-controller
+      go mod download
+      go build -a -o $CRAFT_PART_INSTALL/manager main.go
+
+      mkdir -p $CRAFT_PART_INSTALL/third_party/library
+      cp -pr $HOME/go/pkg/mod/github.com/hashicorp $CRAFT_PART_INSTALL/third_party/library
+    stage:
+      - manager
+      - third_party/library/hashicorp
+    prime:
+      - manager
+      - third_party/library/hashicorp
+
+  non-root-user:
+    plugin: nil
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+
+  # TODO: Need to add the security-team-requirement part like 
+  #       [here](https://github.com/canonical/kubeflow-rocks/blob/main/admission-webhook/rockcraft.yaml#L24)
+  #       but this part needs to be refactored first to work with rockcraft
