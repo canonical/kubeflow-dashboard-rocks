@@ -1,0 +1,81 @@
+name: On Pull Request
+
+# On pull_request, we:
+# * always build the rocks
+# * always run tests
+
+on:
+  pull_request:
+
+jobs:
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-22.04
+    # Required permissions
+    permissions:
+      pull-requests: read
+    # Set job outputs to values from filter step
+    outputs:
+      jupyter-pytorch-cuda-full: ${{ steps.filter.outputs.jupyter-pytorch-cuda-full }}
+      jupyter-pytorch-full: ${{ steps.filter.outputs.jupyter-pytorch-full }}
+      jupyter-scipy: ${{ steps.filter.outputs.jupyter-scipy }}
+      jupyter-tensorflow-cuda-full: ${{ steps.filter.outputs.jupyter-tensorflow-cuda-full }}
+      jupyter-tensorflow-full: ${{ steps.filter.outputs.jupyter-tensorflow-full }}
+    steps:
+    # For pull requests it's not necessary to checkout the code
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          jupyter-pytorch-cuda-full:
+            - 'jupyter-pytorch-cuda-full/**'
+          jupyter-pytorch-full:
+            - 'jupyter-pytorch-full/**'
+          jupyter-scipy:
+            - 'jupyter-scipy/**'
+          jupyter-tensorflow-cuda-full:
+            - 'jupyter-tensorflow-cuda-full/**'
+          jupyter-tensorflow-full:
+            - 'jupyter-tensorflow-full/**'
+
+  test-jupyter-pytorch-cuda-full:
+    needs: changes
+    if: ${{ needs.changes.outputs.jupyter-pytorch-cuda-full == 'true' }}
+    name: Run Tests
+    uses: ./.github/workflows/integrate.yaml
+    with:
+      rock: 'jupyter-pytorch-full'
+
+  test-jupyter-pytorch-full:
+    needs: changes
+    if: ${{ needs.changes.outputs.jupyter-pytorch-full == 'true' }}
+    name: Run Tests
+    uses: ./.github/workflows/integrate.yaml
+    with:
+      rock: 'jupyter-pytorch-full'
+
+  test-jupyter-scipy:
+    needs: changes
+    if: ${{ needs.changes.outputs.jupyter-scipy == 'true' }}
+    name: Run Tests
+    uses: ./.github/workflows/integrate.yaml
+    with:
+      rock: 'jupyter-scipy'
+
+  test-jupyter-tensorflow-cuda-full:
+    needs: changes
+    if: ${{ needs.changes.outputs.jupyter-tensorflow-cuda-full == 'true' }}
+    name: Run Tests
+    uses: ./.github/workflows/integrate.yaml
+    with:
+      rock: 'jupyter-tensorflow-cuda-full'
+  
+  test-jupyter-tensorflow-full:
+    needs: changes
+    if: ${{ needs.changes.outputs.jupyter-tensorflow-full == 'true' }}
+    name: Run Tests
+    uses: ./.github/workflows/integrate.yaml
+    with:
+      rock: 'jupyter-tensorflow-full'
+
+

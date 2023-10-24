@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      rock:
+        description: "Path to rock directory, i.e. directory containing rockcraft.yaml"
+        required: true
+        default: '.'
+        type: string
+
+jobs:
+  build-scan-test-rocks:
+    name: Build, scan, and test rock
+    runs-on: ubuntu-22.04
+    steps:
+      # Ideally we'd use self-hosted runners, but this effort is still not stable.
+      # This action will remove unused software (dotnet, haskell, android libs, codeql,
+      # and docker images) from the GH runner, which will liberate around 60 GB of storage
+      # distributed in 40GB for root and around 20 for a mnt point.
+      - name: Maximise GH runner space
+        uses: easimon/maximize-build-space@v7
+        with:
+          root-reserve-mb: 40960
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-android: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build ROCK
+        uses: canonical/craft-actions/rockcraft-pack@main
+        id: rockcraft
+        with:
+          path: ./${{ inputs.rock }}
+
+      - name: Copy ROCK to Docker
+        id: rock_in_docker
+        run: |
+          NAME=$(yq eval ".name" rockcraft.yaml)
+          VERSION=$(yq eval ".version" rockcraft.yaml)
+          ARCH=$(yq eval ".platforms | keys" rockcraft.yaml | awk -F ' ' '{print $2}')
+          ROCK="${NAME}_${VERSION}_${ARCH}"
+          sudo skopeo --insecure-policy copy oci-archive:$ROCK.rock docker-daemon:$ROCK:$VERSION
+          echo "image=$ROCK:$VERSION" >> "$GITHUB_OUTPUT"
+          docker login
+        working-directory: ${{ inputs.rock }}
+
+      - name: Scan for vulnerabilities
+        id: scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: '${{ steps.rock_in_docker.outputs.image }}'
+          format: 'json'
+          output: '${{ inputs.rock }}/trivy-report-${{ inputs.rock }}.json'
+          ignore-unfixed: true
+
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+            provider: microk8s
+            channel: 1.24/stable
+            charmcraft-channel: latest/candidate
+            microk8s-addons: "dns hostpath-storage rbac ingress metallb:10.64.140.43-10.64.140.49"
+            juju-channel: 2.9/stable
+
+      - name: Sanity tests
+        run: |
+          tox -e sanity
+        working-directory: ./${{ inputs.rock }}
+
+      - name: Integration tests
+        run: |
+          tox -e integration
+        working-directory: ./${{ inputs.rock }}
+
