@@ -1,10 +1,10 @@
-# reusable workflow for publishing all charms in this repo
+# reusable workflow for publishing a ROCK
 name: Build and publish rock
 
 on:
   workflow_call:
     inputs:
-      rockcraft-dir:
+      rock-dir:
         description: "Path to rock directory, i.e. directory containing rockcraft.yaml"
         required: true
         default: '.'
@@ -16,7 +16,7 @@ on:
         type: string
   workflow_dispatch:
     inputs:
-      rockcraft-dir:
+      rock-dir:
         description: "Path to rock directory, i.e. directory containing rockcraft.yaml"
         required: true
         default: '.'
@@ -32,7 +32,7 @@ jobs:
     name: Build and publish ROCK
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_publish_rock.yaml@main
     with:
-      rockcraft-dir: ${{ inputs.rockcraft-dir }}
+      rock-dir: ${{ inputs.rock-dir }}
       source-branch: ${{ inputs.source-branch }}
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
