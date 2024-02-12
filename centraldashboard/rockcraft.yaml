@@ -1,33 +1,41 @@
+# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.8-branch/components/centraldashboard/Dockerfile
 name: kubeflow-central-dashboard
 summary: Kubeflow Landing Page
 description: |
   This component serves as the landing page and central dashboard for Kubeflow deployments.
   It provides a jump-off point to all other facets of the platform.
-version: 1.7.0_22.04_1 # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+version: "1.8"
 license: Apache-2.0
-base: ubuntu:22.04
+base: ubuntu@22.04
+platforms:
+  amd64:
+run-user: _daemon_
+
 services:
   serve:
     override: replace
-    summary: "centraldashboard service"
+    summary: "Kubeflow central dashboard service"
     command: "/usr/bin/npm start --prefix /app"
     startup: enabled
-    user: ubuntu
     environment:
       NODE_ENV: production
-platforms:
-  amd64:
 
 parts:
-  centraldashboard:
+  security-team-requirement:
+    plugin: nil
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
+
+  builder:
     plugin: dump
     source: https://github.com/kubeflow/kubeflow
+    source-subdir: components/centraldashboard
     source-type: git
-    source-tag: v1.7-branch # upstream branch
+    source-tag: v1.8-branch # upstream branch
     build-snaps:
-      - node/18/stable
+      - node/14/stable
     build-packages:
-      - apt
       - bash
       - chromium-browser
       - libnss3
@@ -40,45 +48,33 @@ parts:
     build-environment:
       - CHROME_BIN: /usr/bin/chromium-browser
       - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+      - BUILD_VERSION: "1.8"
     stage-packages:
-      - bash # this is for debugging only, should be removed for production
       - nodejs
       - npm
     override-build: |
       set -xe
-      cd $CRAFT_PART_SRC/components/centraldashboard/
+      cd ${CRAFT_PART_SRC}/components/centraldashboard/
 
       # set environment variables
-      export BUILD_VERSION=$(git describe --abbrev=0 --tags)
       export BUILD_COMMIT=$(git rev-parse HEAD)
 
-      # build
+      # Build phase
+      # This rock only supports amd64 architecture at the moment, the application
+      # will be built w/o flags for other architectures for simplicity.
+      # Please refer to the upstream Dockerfile if that condition changes and different
+      # architectures need to be supported.
       npm rebuild && \
-      if [ "$(uname -m)" = "aarch64" ]; then \
-          export CFLAGS=-Wno-error && \
-          export CXXFLAGS=-Wno-error && \
-          npm install; \
-      else \
-          npm install; \
-      fi && \
+      npm install && \
       npm test && \
       npm run build && \
       npm prune --production
 
       # install build artifacts
-      mkdir -p $CRAFT_PART_INSTALL/app
-      cp -r * $CRAFT_PART_INSTALL/app
+      mkdir -p ${CRAFT_PART_INSTALL}/app
+      cp -r ${CRAFT_PART_SRC}/components/centraldashboard/* ${CRAFT_PART_INSTALL}/app
 
-      # security requirement
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
-      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
-       dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
-       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
-
-  non-root-user:
-    plugin: nil
-    after: [centraldashboard]
-    overlay-script: |
-      # Create a user in the $CRAFT_OVERLAY chroot
-      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
-      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+      # Change permissions of the /app directory to
+      # be owned by the _daemon_ user
+      chown 584792:584792 ${CRAFT_PART_INSTALL}/app
+      chmod 755 ${CRAFT_PART_INSTALL}/app
