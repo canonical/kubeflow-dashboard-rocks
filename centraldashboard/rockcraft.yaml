@@ -15,8 +15,9 @@ services:
   serve:
     override: replace
     summary: "Kubeflow central dashboard service"
-    command: "/usr/bin/npm start --prefix /app"
+    command: "/usr/bin/npm start"
     startup: enabled
+    working-dir: "/app"
     environment:
       NODE_ENV: production
 
