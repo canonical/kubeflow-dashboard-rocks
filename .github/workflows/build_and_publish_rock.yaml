@@ -1,4 +1,4 @@
-# reusable workflow for publishing a ROCK
+# reusable workflow for publishing a rock
 name: Build and publish rock
 
 on:
@@ -29,7 +29,7 @@ on:
 
 jobs:
   build-publish-rock:
-    name: Build and publish ROCK
+    name: Build and publish rock
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_publish_rock.yaml@main
     with:
       rock-dir: ${{ inputs.rock-dir }}
