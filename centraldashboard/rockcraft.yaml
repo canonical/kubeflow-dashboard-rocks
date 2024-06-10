@@ -1,10 +1,10 @@
-# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.8-branch/components/centraldashboard/Dockerfile
-name: kubeflow-central-dashboard
+# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.9.0-rc.0/components/centraldashboard/Dockerfile
+name: centraldashboard
 summary: Kubeflow Landing Page
 description: |
   This component serves as the landing page and central dashboard for Kubeflow deployments.
   It provides a jump-off point to all other facets of the platform.
-version: "1.8"
+version: "1.9.0"
 license: Apache-2.0
 base: ubuntu@22.04
 platforms:
@@ -17,7 +17,7 @@ services:
     summary: "Kubeflow central dashboard service"
     command: "/usr/bin/npm start"
     startup: enabled
-    working-dir: "/app"
+    working-dir: "/usr/src/app"
     environment:
       NODE_ENV: production
 
@@ -33,9 +33,9 @@ parts:
     source: https://github.com/kubeflow/kubeflow
     source-subdir: components/centraldashboard
     source-type: git
-    source-tag: v1.8-branch # upstream branch
+    source-tag: v1.9.0-rc.0 # upstream branch
     build-snaps:
-      - node/14/stable
+      - node/16/stable
     build-packages:
       - bash
       - chromium-browser
@@ -49,7 +49,7 @@ parts:
     build-environment:
       - CHROME_BIN: /usr/bin/chromium-browser
       - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - BUILD_VERSION: "1.8"
+      - BUILD_VERSION: "1.9"
     stage-packages:
       - nodejs
       - npm
@@ -65,17 +65,15 @@ parts:
       # will be built w/o flags for other architectures for simplicity.
       # Please refer to the upstream Dockerfile if that condition changes and different
       # architectures need to be supported.
-      npm rebuild && \
-      npm install && \
-      npm test && \
+      npm ci && \
       npm run build && \
       npm prune --production
 
       # install build artifacts
-      mkdir -p ${CRAFT_PART_INSTALL}/app
-      cp -r ${CRAFT_PART_SRC}/components/centraldashboard/* ${CRAFT_PART_INSTALL}/app
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/src/app
+      cp -r ${CRAFT_PART_SRC}/components/centraldashboard/* ${CRAFT_PART_INSTALL}/usr/src/app
 
-      # Change permissions of the /app directory to
+      # Change permissions of the /usr/src/app directory to
       # be owned by the _daemon_ user
-      chown 584792:584792 ${CRAFT_PART_INSTALL}/app
-      chmod 755 ${CRAFT_PART_INSTALL}/app
+      chown 584792:584792 ${CRAFT_PART_INSTALL}/usr/src/app
+      chmod 755 ${CRAFT_PART_INSTALL}/usr/src/app
