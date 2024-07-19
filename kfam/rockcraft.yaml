@@ -5,9 +5,9 @@
 name: kfam
 summary: Kubeflow Access Management API
 description: Kubeflow Access Management API provides fine-grain user-namespace level access control.
-version: "v1.7.0_1"
+version: "v1.8.0"
 license: Apache-2.0
-base: ubuntu:22.04
+base: ubuntu@22.04
 
 platforms:
   amd64:
@@ -27,7 +27,7 @@ parts:
     source: https://github.com/kubeflow/kubeflow.git
     source-subdir: components/access-management
     source-type: git
-    source-tag: v1.7.0
+    source-tag: v1.8.0
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
