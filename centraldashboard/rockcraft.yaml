@@ -12,7 +12,7 @@ platforms:
 run-user: _daemon_
 
 services:
-  serve:
+  kubeflow-dashboard:
     override: replace
     summary: "Kubeflow central dashboard service"
     command: "/usr/bin/npm start"
