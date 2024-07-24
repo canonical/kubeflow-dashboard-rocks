@@ -1,4 +1,4 @@
-# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.9.0-rc.0/components/centraldashboard/Dockerfile
+# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.9.0/components/centraldashboard/Dockerfile
 name: centraldashboard
 summary: Kubeflow Landing Page
 description: |
@@ -33,7 +33,7 @@ parts:
     source: https://github.com/kubeflow/kubeflow
     source-subdir: components/centraldashboard
     source-type: git
-    source-tag: v1.9.0-rc.0 # upstream branch
+    source-tag: v1.9.0 # upstream branch
     build-snaps:
       - node/16/stable
     build-packages:
