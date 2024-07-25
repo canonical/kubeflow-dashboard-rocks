@@ -77,3 +77,10 @@ parts:
       # be owned by the _daemon_ user
       chown 584792:584792 ${CRAFT_PART_INSTALL}/usr/src/app
       chmod 755 ${CRAFT_PART_INSTALL}/usr/src/app
+
+      # Change permissions of the /root/.npm directory to 
+      # be owned by the _daemon_ user so it can write logs
+      # due to https://github.com/canonical/kubeflow-dashboard-operator/issues/222
+      mkdir -p ${CRAFT_PART_INSTALL}/root/.npm
+      chown 584792:584792 ${CRAFT_PART_INSTALL}/root/.npm
+      chmod 755 ${CRAFT_PART_INSTALL}/root/.npm
