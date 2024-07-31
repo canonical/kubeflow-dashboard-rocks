@@ -1,6 +1,6 @@
 name: admission-webhook
-base: ubuntu:20.04
-version: v1.7.0_1 # version format: <KF-upstream-version>_<Charmed-KF-version>
+base: ubuntu@20.04
+version: v1.9.0
 summary: An image for Kubeflow's admission-webhook
 description: |
   Admission webhook controller in general, intercepts requests to the Kubernetes API server, 
@@ -11,12 +11,12 @@ description: |
 license: Apache-2.0
 
 platforms:
-    amd64:
+  amd64:
 
 services:
   base-admission-webhook:
     override: merge
-    command: webhook
+    command: "admission-webhook"
     startup: enabled
     user: ubuntu
 
@@ -30,22 +30,15 @@ parts:
   admission-webhook:
     plugin: go
     build-snaps:
-      - go/1.17/stable
+      - go/1.21/stable
     source: https://github.com/kubeflow/kubeflow.git
-    source-tag: v1.7-branch 
-    build-environment:
-      - CGO_ENABLED: 0
-      - GOOS: linux
-    override-build: |
-      cd components/admission-webhook 
-      go build -o webhook -a .
-      cp webhook $CRAFT_PART_INSTALL/webhook
-    organize:
-      webhook: "bin/webhook"
+    source-tag: v1.9.0
+    source-depth: 1
+    source-subdir: components/admission-webhook
 
   non-root-user:
     plugin: nil
-    after: [admission-webhook]
+    after: [ admission-webhook ]
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
       groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
