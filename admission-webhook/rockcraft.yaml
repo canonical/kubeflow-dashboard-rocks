@@ -1,3 +1,4 @@
+# From https://github.com/kubeflow/kubeflow/blob/v1.9-branch/components/admission-webhook/Dockerfile
 name: admission-webhook
 base: ubuntu@20.04
 version: v1.9.0
@@ -16,7 +17,7 @@ platforms:
 services:
   base-admission-webhook:
     override: merge
-    command: "admission-webhook"
+    command: "/webhook"
     startup: enabled
     user: ubuntu
 
@@ -27,14 +28,22 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
       (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
 
+  # The go plugin uses go install to build and install the "admission-webhook" binary at
+  # /bin/admission-webhook, which is undesirable as it is expected to be in /webhook.
+  # The go plugin does not offer any mechanism for passing custom install paths, so we have
+  # to use override-build instead to make sure the binary is placed in the expected path.
   admission-webhook:
     plugin: go
     build-snaps:
       - go/1.21/stable
     source: https://github.com/kubeflow/kubeflow.git
-    source-tag: v1.9.0
-    source-depth: 1
-    source-subdir: components/admission-webhook
+    source-tag: v1.9-branch
+    build-environment:
+      - CGO_ENABLED: 0
+      - GOOS: linux
+    override-build: |
+      cd components/admission-webhook
+      go build -o $CRAFT_PART_INSTALL/webhook -a .
 
   non-root-user:
     plugin: nil

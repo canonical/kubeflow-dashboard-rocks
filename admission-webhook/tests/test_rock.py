@@ -49,7 +49,7 @@ def test_rock(rock_test_env):
             "exec",
             "ls",
             "-la",
-            "/bin/admission-webhook",
+            "/webhook",
         ],
         check=True,
     )
