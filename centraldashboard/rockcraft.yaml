@@ -1,10 +1,10 @@
-# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.9.0/components/centraldashboard/Dockerfile
+# Dockerfile https://github.com/kubeflow/kubeflow/blob/v1.10.0-rc.0/components/centraldashboard/Dockerfile
 name: centraldashboard
 summary: Kubeflow Landing Page
 description: |
   This component serves as the landing page and central dashboard for Kubeflow deployments.
   It provides a jump-off point to all other facets of the platform.
-version: "1.9.0"
+version: "1.10.0-rc.0"
 license: Apache-2.0
 base: ubuntu@22.04
 platforms:
@@ -33,7 +33,7 @@ parts:
     source: https://github.com/kubeflow/kubeflow
     source-subdir: components/centraldashboard
     source-type: git
-    source-tag: v1.9.0 # upstream branch
+    source-tag: v1.10.0-rc.0 # upstream branch
     build-snaps:
       - node/16/stable
     build-packages:
@@ -47,9 +47,9 @@ parts:
       - nodejs
       - npm
     build-environment:
-      - CHROME_BIN: /usr/bin/chromium-browser
-      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - BUILD_VERSION: "1.9"
+      - CHROME_BIN: "/usr/bin/chromium-browser"
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+      - BUILD_VERSION: "v1.10.0-rc.0"
     stage-packages:
       - nodejs
       - npm
