@@ -1,11 +1,11 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-# Constructed from https://github.com/kubeflow/kubeflow/blob/v1.9.0/components/access-management/Dockerfile
+# Constructed from https://github.com/kubeflow/kubeflow/blob/v1.10.0-rc.0/components/access-management/Dockerfile
 
 name: kfam
 summary: Kubeflow Access Management API
 description: Kubeflow Access Management API provides fine-grain user-namespace level access control.
-version: "1.9.0"
+version: "1.10.0-rc.0"
 license: Apache-2.0
 base: ubuntu@22.04
 
@@ -33,7 +33,7 @@ parts:
     source: https://github.com/kubeflow/kubeflow.git
     source-subdir: components/access-management
     source-type: git
-    source-tag: v1.9.0
+    source-tag: v1.10.0-rc.0
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
