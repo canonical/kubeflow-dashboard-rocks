@@ -1,8 +1,8 @@
-# Constructed from https://github.com/kubeflow/kubeflow/blob/v1.9.0/components/profile-controller/Dockerfile
+# Constructed from https://github.com/kubeflow/kubeflow/blob/v1.10.0-rc.1/components/profile-controller/Dockerfile
 
 name: profile-controller
 base: ubuntu@22.04
-version: "1.9.0"
+version: "1.10.0-rc.1"
 summary: Controller for Kubeflow Profile objects
 description: Controller for Kubeflow Profile objects
 license: Apache-2.0
@@ -29,7 +29,7 @@ parts:
     plugin: go
     source-type: git
     source: https://github.com/kubeflow/kubeflow.git
-    source-tag: v1.9.0
+    source-tag: v1.10.0-rc.1
     source-subdir: components/profile-controller
     build-environment:
       - CGO_ENABLED: 0
