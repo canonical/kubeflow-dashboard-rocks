@@ -1,7 +1,8 @@
-# From https://github.com/kubeflow/kubeflow/blob/v1.10.0-rc.0/components/admission-webhook/Dockerfile
+# From https://github.com/kubeflow/kubeflow/blob/v1.10.0-rc.1/components/admission-webhook/Dockerfile
 name: admission-webhook
 base: ubuntu@22.04
-version: 1.10.0-rc.0
+run-user: _daemon_
+version: 1.10.0-rc.1
 summary: An image for Kubeflow's admission-webhook
 description: |
   Admission webhook controller in general, intercepts requests to the Kubernetes API server, 
@@ -19,7 +20,6 @@ services:
     override: merge
     command: "/webhook"
     startup: enabled
-    user: ubuntu
 
 parts:
   security-team-requirement:
@@ -37,20 +37,10 @@ parts:
     build-snaps:
       - go/1.21/stable
     source: https://github.com/kubeflow/kubeflow.git
-    source-tag: v1.10.0-rc.0
+    source-tag: v1.10.0-rc.1
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
     override-build: |
       cd components/admission-webhook
       go build -o $CRAFT_PART_INSTALL/webhook -a .
-
-  non-root-user:
-    plugin: nil
-    after: [ admission-webhook ]
-    overlay-script: |
-      # Create a user in the $CRAFT_OVERLAY chroot
-      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
-      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
-    override-prime: |
-      craftctl default
