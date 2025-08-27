@@ -57,6 +57,10 @@ parts:
       set -xe
       cd ${CRAFT_PART_SRC}/components/centraldashboard/
 
+      # Revert due to https://github.com/canonical/bundle-kubeflow/issues/1259
+      # Must be undone once we migrate from oidc-gatekeeper charm
+      git revert c3f43187a42a768f717cb081fba304839d79d97d --no-edit
+
       # set environment variables
       export BUILD_COMMIT=$(git rev-parse HEAD)
 
