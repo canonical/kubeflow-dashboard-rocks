@@ -1,0 +1,5 @@
+integrations:
+  - consumer-repository: https://github.com/canonical/admission-webhook-operator.git
+    replace-image:
+      - file: metadata.yaml
+        path: resources.oci-image.upstream-source
