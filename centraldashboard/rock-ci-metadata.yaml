@@ -4,3 +4,9 @@ integrations:
     replace-image:
       - file: metadata.yaml
         path: resources.oci-image.upstream-source
+
+    service-spec:
+      - file: src/service-config.yaml
+        command:
+          path: command
+          value: "npm start"
