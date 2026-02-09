@@ -6,6 +6,7 @@ version: "1.10.0"
 summary: Controller for Kubeflow Profile objects
 description: Controller for Kubeflow Profile objects
 license: Apache-2.0
+run-user: _daemon_
 
 platforms:
   amd64:
@@ -16,7 +17,6 @@ services:
     override: replace
     startup: enabled
     summary: Profile Controller service
-    user: ubuntu
 
 parts:
   security-team-requirement:
@@ -44,6 +44,9 @@ parts:
 
       mkdir -p $CRAFT_PART_INSTALL/third_party/library
       cp -pr $HOME/go/pkg/mod/github.com/hashicorp $CRAFT_PART_INSTALL/third_party/library
+
+      # make config dir
+      mkdir -p /etc/profile-controller
     stage:
       - manager
       - third_party/library/hashicorp
@@ -53,7 +56,9 @@ parts:
 
   non-root-user:
     plugin: nil
-    overlay-script: |
-      # Create a user in the $CRAFT_OVERLAY chroot
-      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
-      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+    after:
+      - profile-controller
+    override-prime: |
+      craftctl default
+      install -d -o 584792 -g 584792 -m 770 \
+        etc/profile-controller
