@@ -44,3 +44,15 @@ parts:
     override-build: |
       cd components/admission-webhook
       go build -o $CRAFT_PART_INSTALL/webhook -a .
+
+      # make config dir
+      mkdir -p $CRAFT_PART_INSTALL/etc/webhook/certs
+
+  non-root-user:
+    plugin: nil
+    after:
+      - admission-webhook
+    override-prime: |
+      craftctl default
+      install -d -o 584792 -g 584792 -m 770 \
+        etc/webhook/certs
