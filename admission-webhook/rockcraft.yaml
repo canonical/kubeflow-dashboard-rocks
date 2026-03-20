@@ -1,8 +1,8 @@
-# From https://github.com/kubeflow/kubeflow/blob/v1.10.0/components/admission-webhook/Dockerfile
+# From https://github.com/kubeflow/dashboard/blob/v2.0.0-rc.0/components/poddefaults-webhooks/Dockerfile
 name: admission-webhook
-base: ubuntu@22.04
+base: ubuntu@24.04
 run-user: _daemon_
-version: 1.10.0
+version: 2.0.0-rc.0
 summary: An image for Kubeflow's admission-webhook
 description: |
   Admission webhook controller in general, intercepts requests to the Kubernetes API server, 
@@ -35,14 +35,19 @@ parts:
   admission-webhook:
     plugin: go
     build-snaps:
-      - go/1.21/stable
-    source: https://github.com/kubeflow/kubeflow.git
-    source-tag: v1.10.0
+      - go/1.22/stable
+    source: https://github.com/kubeflow/dashboard
+    source-subdir: components/poddefaults-webhooks
+    source-type: git
+    source-tag: v2.0.0-rc.0
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
     override-build: |
-      cd components/admission-webhook
+      cd $CRAFT_PART_SRC_WORK
+
+      go mod download
+
       go build -o $CRAFT_PART_INSTALL/webhook -a .
 
       # make config dir
