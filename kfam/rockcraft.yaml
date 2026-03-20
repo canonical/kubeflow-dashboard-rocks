@@ -1,13 +1,13 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-# Constructed from https://github.com/kubeflow/kubeflow/blob/v1.10.0/components/access-management/Dockerfile
+# Constructed from https://github.com/kubeflow/dashboard/blob/v2.0.0-rc.0/components/access-management/Dockerfile
 
 name: kfam
 summary: Kubeflow Access Management API
 description: Kubeflow Access Management API provides fine-grain user-namespace level access control.
-version: "1.10.0"
+version: 2.0.0-rc.0
 license: Apache-2.0
-base: ubuntu@22.04
+base: ubuntu@24.04
 run-user: _daemon_
 
 platforms:
@@ -29,11 +29,11 @@ parts:
   kfam:
     plugin: go
     build-snaps:
-      - go/1.19/stable
-    source: https://github.com/kubeflow/kubeflow.git
+      - go/1.22/stable
+    source: https://github.com/kubeflow/dashboard
     source-subdir: components/access-management
     source-type: git
-    source-tag: v1.10.0
+    source-tag: v2.0.0-rc.0
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
@@ -41,9 +41,12 @@ parts:
     override-build: |
       # cd into $CRAFT_PART_SRC_WORK due to https://github.com/canonical/craft-parts/issues/427
       cd $CRAFT_PART_SRC_WORK
-      go mod download
-      go build -gcflags 'all=-N -l' -o $CRAFT_PART_INSTALL/access-management main.go
-      chmod a+rx $CRAFT_PART_INSTALL/access-management
+
+      for m in $(go list -m all | awk '/^github.com\/hashicorp\// {print $1 "@" $2}'); do
+        go mod download "$m"
+      done
+
+      go build -o $CRAFT_PART_INSTALL/access-management main.go
+
       cp -r third_party $CRAFT_PART_INSTALL/third_party
       cp -r /root/go/pkg/mod/github.com/hashicorp $CRAFT_PART_INSTALL/third_party/library/
-
