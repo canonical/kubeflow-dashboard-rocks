@@ -37,6 +37,8 @@ parts:
     build-snaps:
       - go/1.22/stable
     # Override-build because we want to move the hashicorp library folder
+    overlay-packages:
+      - ca-certificates
     override-build: |
       cd $CRAFT_PART_SRC_WORK
 
