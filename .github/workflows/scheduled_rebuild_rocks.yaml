@@ -3,6 +3,7 @@ name: Scheduled rebuild rocks for all refs
 on:
   schedule:
     - cron: '0 5 1 * *'   # 1st of each month, 05:00 UTC
+  workflow_dispatch:
 
 jobs:
 
