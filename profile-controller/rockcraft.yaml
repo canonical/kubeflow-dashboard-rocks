@@ -2,7 +2,7 @@
 
 name: profile-controller
 base: ubuntu@24.04
-version: 2.0.0-rc.0-ambient1
+version: 2.0.0-rc.0-ambient1-pr50
 summary: Controller for Kubeflow Profile objects
 description: Controller for Kubeflow Profile objects
 license: Apache-2.0
@@ -29,36 +29,32 @@ parts:
     plugin: go
     source-type: git
     source: https://github.com/canonical/kubeflow-dashboard
-    source-tag: v2.0.0-rc.0-ambient1
+    source-commit: 1e28990c85f31f33db2c64994bd0ae56ee1c2dc7
     source-subdir: components/profile-controller
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
     build-snaps:
-      - go/1.22/stable
-    # Override-build because we want to move the hashicorp library folder
+      - go/1.26/stable
+    # Override-build to include the third-party library licenses.
     overlay-packages:
       - ca-certificates
     override-build: |
       cd $CRAFT_PART_SRC_WORK
 
-      for m in $(go list -m all | awk '/^github.com\/hashicorp\// {print $1 "@" $2}'); do
-        go mod download "$m"
-      done
-
       go build -a -o $CRAFT_PART_INSTALL/manager main.go
 
       mkdir -p $CRAFT_PART_INSTALL/third_party/library
-      cp -pr $HOME/go/pkg/mod/github.com/hashicorp $CRAFT_PART_INSTALL/third_party/library
+      cp -pr third_party/library/. $CRAFT_PART_INSTALL/third_party/library/
 
       # make config dir
       mkdir -p /etc/profile-controller
     stage:
       - manager
-      - third_party/library/hashicorp
+      - third_party/library
     prime:
       - manager
-      - third_party/library/hashicorp
+      - third_party/library
 
   non-root-user:
     plugin: nil
