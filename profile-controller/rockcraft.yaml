@@ -1,8 +1,8 @@
-# Constructed from https://github.com/canonical/kubeflow-dashboard/blob/v2.0.0-rc.0-ambient1/components/profile-controller/Dockerfile
+# Constructed from https://github.com/canonical/kubeflow-dashboard/blob/v2.0.1-ambient/components/profile-controller/Dockerfile
 
 name: profile-controller
 base: ubuntu@24.04
-version: 2.0.0-rc.0-ambient1-pr50
+version: 2.0.1-ambient
 summary: Controller for Kubeflow Profile objects
 description: Controller for Kubeflow Profile objects
 license: Apache-2.0
@@ -29,7 +29,7 @@ parts:
     plugin: go
     source-type: git
     source: https://github.com/canonical/kubeflow-dashboard
-    source-commit: 1e28990c85f31f33db2c64994bd0ae56ee1c2dc7
+    source-tag: v2.0.1-ambient
     source-subdir: components/profile-controller
     build-environment:
       - CGO_ENABLED: 0
