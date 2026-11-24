@@ -63,7 +63,7 @@ def test_rock(rock_test_env):
             "exec",
             "ls",
             "-la",
-            "/third_party/library/hashicorp",
+            "/third_party/library/license.txt",
         ],
         check=True,
     )
