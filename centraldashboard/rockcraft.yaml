@@ -1,10 +1,10 @@
-# Dockerfile https://github.com/kubeflow/dashboard/blob/v2.0.0-rc.0/components/centraldashboard/Dockerfile
+# Dockerfile https://github.com/kubeflow/dashboard/blob/v2.0.1/components/centraldashboard/Dockerfile
 name: centraldashboard
 summary: Kubeflow Landing Page
 description: |
   This component serves as the landing page and central dashboard for Kubeflow deployments.
   It provides a jump-off point to all other facets of the platform.
-version: "2.0.0-rc.0"
+version: "2.0.1"
 license: Apache-2.0
 base: ubuntu@22.04
 platforms:
@@ -28,14 +28,22 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
       (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
 
+  install-node:
+    plugin: nil
+    override-build: |
+      curl -s "https://nodejs.org/dist/v22.19.0/node-v22.19.0-linux-x64.tar.gz" \
+        | tar --strip-components=1 -xzf - -C "${CRAFT_PART_INSTALL}"
+
   builder:
+    after:
+      - install-node
     plugin: dump
     source: https://github.com/kubeflow/dashboard
     source-subdir: components/centraldashboard
     source-type: git
-    source-tag: v2.0.0-rc.0
+    source-tag: v2.0.1
     build-snaps:
-      - node/16/stable
+      - node/22/stable
     build-packages:
       - bash
       - chromium-browser
@@ -49,12 +57,13 @@ parts:
     build-environment:
       - CHROME_BIN: "/usr/bin/chromium-browser"
       - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-      - BUILD_VERSION: "v2.0.0"
-    stage-packages:
-      - nodejs
-      - npm
+      - BUILD_VERSION: "v2.0.1"
     override-build: |
-      set -xe
+      set -xeuo pipefail
+      curl -s "https://nodejs.org/dist/v22.19.0/node-v22.19.0-linux-x64.tar.gz" \
+        | tar --strip-components=1 -xzf - -C "/usr"
+      node --version
+      npm --version
       cd ${CRAFT_PART_SRC}/components/centraldashboard/
 
       # Revert due to https://github.com/canonical/bundle-kubeflow/issues/1259
@@ -69,8 +78,8 @@ parts:
       # will be built w/o flags for other architectures for simplicity.
       # Please refer to the upstream Dockerfile if that condition changes and different
       # architectures need to be supported.
-      npm ci && \
-      npm run build && \
+      npm ci
+      npm run build
       npm prune --production
 
       # install build artifacts
