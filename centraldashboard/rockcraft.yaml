@@ -6,7 +6,7 @@ description: |
   It provides a jump-off point to all other facets of the platform.
 version: "2.0.1"
 license: Apache-2.0
-base: ubuntu@22.04
+base: ubuntu@26.04
 platforms:
   amd64:
 run-user: _daemon_
@@ -46,7 +46,6 @@ parts:
       - node/22/stable
     build-packages:
       - bash
-      - chromium-browser
       - libnss3
       - libfreetype-dev
       - libharfbuzz-dev
@@ -55,7 +54,6 @@ parts:
       - nodejs
       - npm
     build-environment:
-      - CHROME_BIN: "/usr/bin/chromium-browser"
       - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
       - BUILD_VERSION: "v2.0.1"
     override-build: |
